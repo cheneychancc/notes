@@ -1,2 +1,0 @@
-- GAMES101 NOTES
-- Shader NOTES
