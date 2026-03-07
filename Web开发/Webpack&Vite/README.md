@@ -1,0 +1,31 @@
+Webpack dev server 启动流程：
+
+```
+读取所有依赖
+↓
+解析 import
+↓
+构建依赖图
+↓
+编译 TS / Vue
+↓
+全部打包
+↓
+生成 bundle.js
+↓
+浏览器加载 bundle.js
+```
+
+Vite:
+```
+先运行 → 按需编译
+```
+
+直接原因是早期浏览器 不支持模块化
+
+```JavaScript
+import Button from "./Button"
+import Chart from "./Chart"
+```
+
+浏览器是不能直接执行的。
