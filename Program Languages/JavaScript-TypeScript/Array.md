@@ -1,0 +1,164 @@
+> [!NOTE]
+> 关于数组方法
+
+
+| 方法      | 功能                                                                                     | 返回值            | 是否改变原数组 |
+| --------- | ---------------------------------------------------------------------------------------- | ----------------- | -------------- |
+| map()     | 创建一个新数组，这个新数组由原数组中的每个元素都调用一次提供的函数后的返回值组成         | new Array         | NO             |
+| forEach() | 对数组的每个元素执行一次给定的函数                                                       | 无                | NO             |
+| filter()  | 把满足条件的元素筛选出来放到新数组中                                                     | Array             | NO             |
+| some()    | 判断数组中是否存在, 满足某个条件的元素                                                   | True/False        | NO             |
+| every()   | 判断数组中所有的元素是否满足某个条件                                                     | True/False        | NO             |
+| find()    | 遍历数组,执行回调函数,回调函数执行一个条件,返回满足条件的第一个元素,不存在返回 undefined | element/undefined | NO             |
+
+## 解构赋值
+
+在 JavaScript 中，合并数组时，**解构赋值**（`...`展开运算符）和**数组 API**（如 `Array.prototype.concat`）的效率比较，主要取决于以下几个因素：
+
+---
+
+### 1. **两种方式的本质区别**：
+
+#### **解构赋值（`...`）**：
+
+解构赋值通过展开运算符创建一个新数组，将所有元素复制到这个新数组中：
+
+```javascript
+const array1 = [1, 2];
+const array2 = [3, 4];
+const merged = [...array1, ...array2];
+```
+
+#### **数组 API（`concat`）**：
+
+`concat` 方法调用时，底层实现类似于迭代每个数组并将它们的元素添加到新数组中。
+
+```javascript
+const array1 = [1, 2];
+const array2 = [3, 4];
+const merged = array1.concat(array2);
+```
+
+---
+
+### 2. **性能对比**：
+
+#### **解构赋值的性能**：
+
+解构赋值通常需要显式展开数组中的所有元素，这可能会对性能产生一定影响，尤其是当数组较大时。
+
+- **优点**：语法简洁、灵活性高，可以与其他操作（如嵌套解构）轻松结合。
+- **缺点**：当数组规模较大时，解构的计算成本可能稍高，因为它需要单独处理每个元素。
+
+#### **`concat` 的性能**：
+
+`concat` 方法底层使用优化的数组拼接算法（具体实现由 JavaScript 引擎决定），通常性能会优于显式展开。
+
+- **优点**：对于大数组来说，`concat` 的性能通常比解构赋值更好。
+- **缺点**：语法稍显冗长，不如解构赋值简洁。
+
+---
+
+### 3. **性能测试**：
+
+以下是一个简单的性能测试代码片段：
+
+```javascript
+const array1 = Array(100000).fill(1);
+const array2 = Array(100000).fill(2);
+
+// 测试解构赋值
+console.time("spread");
+const merged1 = [...array1, ...array2];
+console.timeEnd("spread");
+
+// 测试 concat
+console.time("concat");
+const merged2 = array1.concat(array2);
+console.timeEnd("concat");
+```
+
+#### **测试结果**（可能因环境不同而异）：
+
+- **小数组**：两种方法性能差异很小。
+- **大数组**：`concat` 方法通常稍快，因为其底层实现经过优化，避免了解构赋值的展开操作带来的额外开销。
+
+---
+
+### 4. **什么时候选择哪种方式？**
+
+- **优先使用解构赋值**：
+
+  - 如果更关注代码可读性和简洁性。
+  - 合并的数组较小，性能不是主要考虑因素。
+
+- **优先使用 `concat`**：
+  - 如果合并的数组非常大，并且需要更好的性能。
+  - 对旧版 JavaScript 兼容性要求较高时（例如不支持 `...` 的环境）。
+
+---
+
+### 5. **现代开发中的建议**：
+
+在现代开发中，解构赋值是更受欢迎的方式，因为它语法更简洁且功能更灵活。如果性能不是瓶颈，推荐使用解构赋值；但对于性能敏感的大规模数组操作，可以考虑使用 `concat`。
+
+```javascript
+// 小数组或一般场景
+const merged = [...array1, ...array2];
+
+// 性能关键场景
+const merged = array1.concat(array2);
+```
+
+## reduce()
+
+是的，你完全可以使用 `reduce` 方法来按顺序执行一系列 Promise 请求。`reduce` 是一个非常强大的数组方法，它可以将数组中的元素逐个处理，并保持累积状态。在处理异步操作时，我们可以利用 `reduce` 来保证每个 Promise 是一个接一个地按顺序执行。
+
+### 使用 `reduce` 按顺序执行 Promise 请求的示例：
+
+假设你有一个包含 20 个请求的数组，想要按顺序执行这些请求，你可以这样做：
+
+```javascript
+// 模拟一个异步请求函数
+const fetchData = (index) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      console.log(`Request ${index} finished`);
+      resolve(`Result of request ${index}`);
+    }, 1000); // 模拟请求延时 1 秒
+  });
+};
+
+// 需要按顺序执行的请求列表
+const requests = Array.from({ length: 20 }, (_, i) => i + 1); // [1, 2, 3, ..., 20]
+
+// 使用 reduce 按顺序处理 Promise 请求
+const processRequests = () => {
+  return requests.reduce((promiseChain, currentRequest) => {
+    // 每次将当前请求添加到链中，保证顺序执行
+    return promiseChain.then(() => fetchData(currentRequest));
+  }, Promise.resolve()); // 初始化一个 resolved 的 Promise，作为起点
+};
+
+processRequests()
+  .then(() => {
+    console.log("All requests completed!");
+  })
+  .catch((error) => {
+    console.error("Error occurred:", error);
+  });
+```
+
+### 解释：
+
+1. **`requests` 数组**：我们用 `Array.from` 创建一个包含 20 个元素的数组，表示 20 个请求。
+2. **`reduce` 的使用**：
+   - `reduce` 方法会遍历 `requests` 数组中的每个请求。
+   - 每一次迭代中，我们将前一个返回的 Promise (`promiseChain`) 与当前请求的 Promise (`fetchData(currentRequest)`) 链接起来，确保它们按顺序执行。
+   - 初始值是 `Promise.resolve()`，即一个已经解决的 Promise，作为链条的起点。
+3. **`promiseChain.then(() => fetchData(currentRequest))`**：在每一步中，`then` 方法会等待前一个请求完成后再执行下一个请求。
+4. **最终执行**：`processRequests` 返回一个最终的 Promise，你可以在 `then` 中处理所有请求完成后的逻辑。
+
+### 总结：
+
+使用 `reduce` 方法处理异步请求时，能够按顺序串联多个 `Promise`，确保它们一个接一个地执行。每个 `then` 返回一个新的 `Promise`，这样保证了异步操作的顺序执行。
