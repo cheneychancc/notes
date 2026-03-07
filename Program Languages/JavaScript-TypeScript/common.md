@@ -102,3 +102,17 @@ if ("propertyName" in object) {
   // 对象上没有 propertyName 属性
 }
 ```
+
+# 类型
+
+## undefined 和 null
+
+|        | undefined   | null            |
+| ------ | ----------- | --------------- |
+| 含义     | 未定义         | 空值              |
+| 来源     | JS 自动产生     | 开发者设置           |
+| typeof | "undefined" | "object"(历史bug) |
+| JSON   | 会被忽略        | 会保留             |
+| ==     | 与 null 相等   | 与 undefined 相等  |
+| ===    | 不相等         | 不相等             |
+
